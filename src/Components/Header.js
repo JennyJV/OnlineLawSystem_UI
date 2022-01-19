@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
 import Modal from 'react-modal';
-import FacebookLogin from 'react-facebook-login';
-import GoogleLogin from 'react-google-login';
 import axios from 'axios';
+import qs from 'qs';
+import { Link } from 'react-router-dom';
 
 import '../Styles/header.css';
 
@@ -29,39 +29,19 @@ class Header extends Component {
     constructor() {
         super();
         this.state = {
-            backgroundStyle: '',
             isLoginModalOpen: false,
             isSignupModalOpen: false,
-            username: '',
+            email: '',
             password: '',
-            firstName: '',
-            lastName: '',
+            password2: '',
+            name: '',
+            aadhar: '',
+            role: '',
             user: undefined,
             isLoggedIn: false,
             loginError: undefined,
             signUpError: undefined
         };
-    }
-
-    componentDidMount() {
-        const initialPath = this.props.history.location.pathname;
-        this.setHeaderStyle(initialPath);
-
-        this.props.history.listen((location, action) => {
-            this.setHeaderStyle(location.pathname);
-        });
-    }
-
-    setHeaderStyle = (path) => {
-        let bg = '';
-        if (path === '/' || path === '/home') {
-            bg = 'transparent';
-        } else {
-            bg = 'coloured';
-        }
-        this.setState({
-            backgroundStyle: bg
-        });
     }
 
     goToHome = () => {
@@ -81,33 +61,32 @@ class Header extends Component {
     }
 
     loginHandler = () => {
-        // check the value, show the message
-        const { username, password } = this.state;
+        const { email, password } = this.state;
         const obj = {
-            username: username,
+            email: email,
             password: password
         };
-        axios({
-            method: 'POST',
-            url: `${API_URL}/api/login`,
-            header: { 'Content-Type': 'application/json' },
-            data: obj
-        }).then(result => {
-            localStorage.setItem("user", JSON.stringify(result.data.user));
-            localStorage.setItem("isLoggedIn", true);
-            this.setState({
-                user: result.data.user,
-                isLoggedIn: true,
-                loginError: undefined,
-                isLoginModalOpen: false
-            });
-        }).catch(err => {
-            this.setState({
-                isLoggedIn: false,
-                loginError: "Username or password is wrong"
-            });
-        })
+        axios.post("http://localhost:5000/login", qs.stringify(obj)).then(
+            (result) => {
+                localStorage.setItem("user", JSON.stringify(result.data.user));
+                localStorage.setItem("role", JSON.stringify(result.data.role));
+                localStorage.setItem("isLoggedIn", true);
+                this.setState({
+                    user: result.data.user,
+                    role: result.data.role,
+                    isLoggedIn: true,
+                    loginError: undefined,
+                    isLoginModalOpen: false
+                });
+            }).catch((err) => {
+                this.setState({
+                    isLoggedIn: false,
+                    loginError: "Username or Password is incorrect"
+                });
+            })
+
     }
+
 
     loginCancelHandler = () => {
         this.closeLoginModal();
@@ -126,6 +105,29 @@ class Header extends Component {
     }
 
     signupHandler = () => {
+        const { name, email, password, password2, aadhar, role } = this.state;
+        const obj = {
+            name: name,
+            email: email,
+            password: password,
+            password2: password2,
+            aadhar: aadhar,
+            role: role
+        };
+        axios.post("http://localhost:5000/register", qs.stringify(obj)).then(
+            (res) => {
+                localStorage.setItem("isLoggedIn", false);
+                this.setState({
+                    isLoggedIn: false,
+                    loginError: undefined,
+                    isLoginModalOpen: false
+                });
+            }).catch((err) => {
+                this.setState({
+                    isLoggedIn: false,
+                    loginError: "Registration failed"
+                });
+            })
 
     }
 
@@ -133,12 +135,8 @@ class Header extends Component {
         this.closeSignupModal();
     }
 
-    responseFacebook = (data) => {
-        // take the data to make API calls to login / signup the user
-    }
-
-    responseGoogle = (data) => {
-        // take the data to make the API call to login / signup the user
+    checkmessage = () => {
+        alert(this.role);
     }
 
     toggleAuth = (auth) => {
@@ -162,116 +160,133 @@ class Header extends Component {
 
     logout = () => {
         localStorage.removeItem("user");
+        localStorage.removeItem("role")
         localStorage.removeItem("isLoggedIn");
         this.setState({
             user: undefined,
+            role: undefined,
             isLoggedIn: false
         });
     }
 
     render() {
-        const { backgroundStyle, isLoginModalOpen, isSignupModalOpen, username, password, firstName, lastName, user, loginError, isLoggedIn } = this.state;
+        const { isLoginModalOpen, isSignupModalOpen, email, password, password2, name, user, role, aadhar, loginError, isLoggedIn } = this.state;
         return (
             <React.Fragment>
-                <div className="header" style={{ 'background': backgroundStyle == 'transparent' ? 'transparent' : '#eb2929' }}>
-                    <div className="container">
-                        <div className="row">
-                            <div className="logoSection col-6">
-                                {
-                                    backgroundStyle == 'transparent'
-                                        ?
-                                        null
-                                        :
-                                        <div className="logo-small" onClick={this.goToHome}>e!</div>
-                                }
+                <div className="header">
+                    <div className="row">
+                        <div className="col-3  ">
+                            <img src={require('../Assets/OLS_logo.png').default}
+                                alt="Logo" height="70px"
+                            />
+                            <span class="text-white heading"> Online Law System</span>
+                        </div><div className="col-4">
+                            <button className="signup-button" onClick={this.goToHome}>Home</button>
+                            <Link to='/AddLawyer'><button className="signup-button">About</button></Link>
+                            {(() => {
+                                if (isLoggedIn) {
+                                    if ("admin" == user.role) {
+                                        return (
+                                            <>
+                                                <button class="dropdown-toggle menu" data-bs-toggle="dropdown">
+                                                    Services
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><Link class="dropdown-item" to="/AddCourt">Add Court</Link></li>
+                                                    <li><Link class="dropdown-item" to="/AddLaw">Add Law</Link></li>
+                                                    <li><Link class="dropdown-item" to="/AddLawyer">Add Lawyer</Link></li>
+                                                </ul>
+                                            </>
+                                        )
+                                    } if ("lawyer" == user.role) {
+                                        return (
+                                            <>
+                                                <button class="dropdown-toggle menu" data-bs-toggle="dropdown">
+                                                    Services
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#">View New Cases</a></li>
+                                                    <li><a class="dropdown-item" href="#">Verify Case</a></li>
+                                                    <li><a class="dropdown-item" href="#">File verified case</a></li>
+                                                </ul>
+                                            </>
+                                        )
+                                    } if ("public" == user.role) {
+                                        return (
+                                            <>
+                                                <button class="dropdown-toggle menu" data-bs-toggle="dropdown">
+                                                    Services
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#">File a case</a></li>
+                                                    <li><a class="dropdown-item" href="#">View Case Status</a></li>
+                                                </ul>
+                                            </>
+                                        )
+                                    }
 
-                            </div>
-                            <div className="loginSection col-6">
-                                {
-                                    isLoggedIn 
+                                }
+                            })()}
+
+                        </div>
+
+                        <div className="loginSection col-5 logo">
+                            {
+                                isLoggedIn
                                     ?
                                     <>
-                                        <span className="text-white m-4">{user.firstName}</span>
+                                        <span className="text-white m-4">Welcome {user.name} !</span>
                                         <button className="signup-button" onClick={this.logout}>Logout</button>
                                     </>
                                     :
                                     <>
-                                        <button className="login-button" onClick={this.openLoginModal}>Login</button>
-                                        <button className="signup-button" onClick={this.openSignupModal}>Create an account</button>
+                                        <button className="login-button" onClick={this.openLoginModal}>Sign In</button>
+                                        <span className="text-white">|</span>
+                                        <button className="signup-button" onClick={this.openSignupModal}>Register</button>
                                     </>
-                                }
-                            </div>
+                            }
+
                         </div>
                     </div>
                 </div>
                 <Modal isOpen={isLoginModalOpen} style={customStyles}>
-                    <h2 className="popup-heading">
+
+                    <h3 className="popup-heading">
                         Login
                         <button className="float-end btn btn-close mt-2" onClick={this.closeLoginModal}></button>
-                    </h2>
+                    </h3>
                     <form className="my-4">
-                        <input className="form-control" type="text" placeholder="Email" value={username} required onChange={(e) => this.handleChange(e, 'username')}/>
-                        <input className="form-control my-2" type="password" placeholder="Password" value={password} required onChange={(e) => this.handleChange(e, 'password')}/>
-                        <input type="button" className="btn form-control login-btn" onClick={this.loginHandler} value="Login" />
-                        <button className="btn form-control" onClick={this.loginCancelHandler}>Cancel</button>
+                        <label for="username" class="sr-only">Email</label>
+                        <input id="username" className="form-control my-2" type="text" value={email} required onChange={(e) => this.handleChange(e, 'email')} />
+                        <label for="pwd" class="sr-only">Password</label>
+                        <input id="pwd" className="form-control my-2" type="password" value={password} required onChange={(e) => this.handleChange(e, 'password')} />
+                        <input type="button" className="btn-primary form-control login-btn my-4" onClick={this.loginHandler} value="Login" />
                     </form>
-                    <div className="text-center mt-2">
-                        <FacebookLogin 
-                            appId="15426XXXXXXX095-SSSS"
-                            textButton="Continue with Facebook"
-                            autoLoad={true}
-                            fields="name,email,picture"
-                            callback={this.responseFacebook}
-                            cssClass="my-facebook-button-class mb-2"
-                            icon="fa-facebook"
-                        />
-                        <GoogleLogin 
-                            clientId="XXXXXXXXXX-XXXXXXXXXXXXXXXX.apps.googleusercontent.com"
-                            buttonText="Continue with Google"
-                            onSuccess={this.responseGoogle}
-                            onFailure={this.responseGoogle}
-                            cookiePolicy={'single_host_origin'}
-                            className="my-facebook-button-class"
-                        />
-                    </div> 
-                    <hr className="mt-5"/>
+
+                    <hr className="my-2" />
                     <div className="bottom-text">
-                        Don’t have account? <button className="text-danger btn m-0 p-0" onClick={() => this.toggleAuth('signup')}>Sign UP</button>
+                        Not a member? <button className="text-danger btn m-0 p-0" onClick={() => this.toggleAuth('signup')}>Register</button>
                     </div>
                 </Modal>
                 <Modal isOpen={isSignupModalOpen} style={customStyles}>
                     <h2 className="popup-heading">
-                        Create an account
+                        Register
                         <button className="float-end btn btn-close mt-2" onClick={this.closeSignupModal}></button>
                     </h2>
                     <form className="my-4">
-                        <input className="form-control" type="text" placeholder="Firstname" value={firstName} onChange={(e) => this.handleChange(e, 'firstName')}/>
-                        <input className="form-control my-2" type="text" placeholder="Lastname" value={lastName} onChange={(e) => this.handleChange(e, 'lastName')}/>
-                        <input className="form-control" type="text" placeholder="Email" value={username} onChange={(e) => this.handleChange(e, 'username')}/>
-                        <input className="form-control my-2" type="password" placeholder="Password" value={password} onChange={(e) => this.handleChange(e, 'password')}/>
-                        <button className="btn form-control login-btn" onClick={this.signupHandler}>Create account</button>
-                        <button className="btn form-control" onClick={this.signupCancelHandler}>Cancel</button>
+                        <input className="form-control my-3" type="text" placeholder="Full Name" value={name} onChange={(e) => this.handleChange(e, 'name')} />
+                        <input className="form-control my-3" type="text" placeholder="Email" value={email} onChange={(e) => this.handleChange(e, 'email')} />
+                        <input className="form-control my-3" type="text" placeholder="Aadhar number" value={aadhar} onChange={(e) => this.handleChange(e, 'aadhar')} />
+                        <input className="form-control my-3" type="password" placeholder="Password" value={password} onChange={(e) => this.handleChange(e, 'password')} />
+                        <input className="form-control my-3" type="password" placeholder="Confirm Password" value={password2} onChange={(e) => this.handleChange(e, 'password2')} />
+                        <select class="form-control my-3" onChange={(e) => this.handleChange(e, 'role')}>
+                            <option value="none">Select Role</option>
+                            <option value="public">Public</option>
+                            <option value="lawyer">Lawyer</option>
+                        </select>
+                        <button className="btn-primary form-control login-btn my-4" onClick={this.signupHandler}>Register</button>
                     </form>
-                    <div className="text-center mt-2">
-                        <FacebookLogin 
-                            appId="154268059997095"
-                            textButton="Continue with Facebook"
-                            autoLoad={true}
-                            fields="name,email,picture"
-                            callback={this.responseFacebook}
-                            cssClass="my-facebook-button-class mb-2"
-                            icon="fa-facebook"
-                        />
-                        <GoogleLogin 
-                            clientId="690405471554-djop9bos7vcldopgt7qlh73ldg1ikda8.apps.googleusercontent.com"
-                            buttonText="Continue with Google"
-                            onSuccess={this.responseGoogle}
-                            onFailure={this.responseGoogle}
-                            cookiePolicy={'single_host_origin'}
-                            className="my-facebook-button-class"
-                        />
-                    </div> 
-                    <hr className="mt-5"/>
+                    <hr className="my-2" />
                     <div className="bottom-text">
                         Already have an account? <button className="text-danger btn m-0 p-0" onClick={() => this.toggleAuth('login')}>Login</button>
                     </div>

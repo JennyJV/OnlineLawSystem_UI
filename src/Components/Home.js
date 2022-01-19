@@ -1,51 +1,14 @@
 import React, { Component } from 'react';
 import '../Styles/home.css';
-import axios from 'axios';
-
-import Wallpaper from './Wallpaper';
-import QuickSearches from './QuickSearches';
-
-const constants = require('../constants');
-const API_URL = constants.API_URL;
-
+import Banner from './Banner';
+import HomeContent from './HomeContent';
 export default class Home extends Component {
 
-    constructor() {
-        super();
-        this.state = {
-            locations: [],
-            mealtypes: []
-        }
-    }
-
-    componentDidMount() {
-        axios.get(`${API_URL}/api/getAllLocations`)
-            .then(result => {
-                this.setState({
-                    locations: result.data.locations
-                });
-            })
-            .catch(error => {
-                console.log(error);
-            });
-        
-        axios.get(`${API_URL}/api/getMealTypes`)
-            .then(result => {
-                this.setState({
-                    mealtypes: result.data.mealtypes
-                });
-            })
-            .catch(error => {
-                console.log(error);
-            });
-    }
-
     render() {
-        const { locations, mealtypes } = this.state;
         return (
             <React.Fragment>
-                <Wallpaper cities={locations} />
-                <QuickSearches quicksearches={mealtypes} />
+                <Banner/>
+                <HomeContent/>
             </React.Fragment>
         )
     }

@@ -1,0 +1,22 @@
+.footer {
+    background: black;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 80px;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.459);
+    text-align: center;
+    margin-top:417px;
+    padding-bottom: 0px;  
+    margin-bottom: 10px;  
+}
+.footer-button {
+    border: none;
+    background: transparent;
+    border-radius: 5px;
+    line-height: 38px;
+    padding: 0 10px;
+    color: black;
+    margin-right: 10px;
+}
