@@ -182,7 +182,7 @@ class Header extends Component {
                             <span class="text-white heading"> Online Law System</span>
                         </div><div className="col-4">
                             <button className="signup-button" onClick={this.goToHome}>Home</button>
-                            <Link to='/AddLawyer'><button className="signup-button">About</button></Link>
+                            <Link to='/FileACase'><button className="signup-button">About</button></Link>
                             {(() => {
                                 if (isLoggedIn) {
                                     if ("admin" == user.role) {

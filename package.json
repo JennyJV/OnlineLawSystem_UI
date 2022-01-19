@@ -1,5 +1,5 @@
 {
-  "name": "OnlineLawSystemFrontEnd",
+  "name": "OnlineLawSystem_UI",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -10,6 +10,7 @@
     "bootstrap": "^5.1.3",
     "query-string": "^7.0.1",
     "react": "^17.0.2",
+    "react-autocomplete": "^1.8.1",
     "react-bootstrap": "^2.1.0",
     "react-dom": "^17.0.2",
     "react-facebook-login": "^4.1.1",
