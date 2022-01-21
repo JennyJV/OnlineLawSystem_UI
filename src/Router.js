@@ -13,6 +13,7 @@ import AddLaw from './Components/AddLaw';
 import AddCourt from './Components/AddCourt';
 import FileACase from './Components/FileACase';
 import LawAutoComplete from './Components/LawAutoComplete';
+import CaseReport from './Components/CaseReport';
 export default class Router extends Component {
     render() {
         return (
@@ -29,6 +30,7 @@ export default class Router extends Component {
                 <Route path="/AddCourt" component={AddCourt} />
                 <Route path="/FileACase" component={FileACase} />
                 <Route path="/LawAutoComplete" component={LawAutoComplete} />
+                <Route path="/CaseReport" component={CaseReport} />
                 <Footer/>
                 
             </BrowserRouter>
