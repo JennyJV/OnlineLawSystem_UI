@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import qs from 'qs';
 import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 <script src="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table.min.js" />
 
 
@@ -11,7 +12,6 @@ export default class CaseReport extends Component {
     super(props)
 
     this.state = {
-      products: [],
       caseData: []
     }
     const { products } = this.state;
@@ -36,7 +36,7 @@ export default class CaseReport extends Component {
   }
   render() {
     const caseColumns = [{
-      dataField: '_id',
+      dataField: 'caseID',
       text: 'Case ID'
     }, {
       dataField: 'petitionerName',
@@ -61,28 +61,25 @@ export default class CaseReport extends Component {
       text: 'Lawyer'
     }, {
       dataField: 'ipc',
-      text: 'IPC Section'
+      text: 'IPC Section',
+      sort: true
     }, {
       dataField: 'casestatus',
-      text: 'Status'
+      text: 'Status',
+      sort: true
+    }, {
+      dataField: 'year',
+      text: 'Year',
+      sort: true
     }];
 
-    var products = [{
-      id: 1,
-      name: "Product1",
-      price: 120
-    }, {
-      id: 2,
-      name: "Product2",
-      price: 80
-    }];
     return (
       <>
         <link rel="stylesheet" href="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table-all.min.css">
         </link>
         <div className='container body-container'>
           
-          <BootstrapTable keyField='id' data={this.state.caseData} columns={caseColumns} />
+          <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns}   striped hover condensed pagination={ paginationFactory() }  />
         </div>
       </>
     );

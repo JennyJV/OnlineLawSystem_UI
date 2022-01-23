@@ -117,8 +117,7 @@ export default class FileACase extends Component {
       accusedAddress:accusedAddress,
       court:court,
       lawyer:lawyer,
-      ipc:node.querySelector('#law-autocomplete').value,
-      casestatus:"New"
+      ipc:node.querySelector('#law-autocomplete').value
     };
     alert(qs.stringify(obj));
     axios.post("http://localhost:5000/fileCase", qs.stringify(obj)).then(
