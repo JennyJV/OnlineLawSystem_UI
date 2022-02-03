@@ -10,7 +10,8 @@ export default class AddCourt extends Component {
       DistrictId: '',
       CourtId:'',
       StateData: [],
-      DistrictData: []
+      DistrictData: [],
+      validationError:''
     }
   }
 
@@ -18,16 +19,20 @@ export default class AddCourt extends Component {
     axios.get("http://localhost:5000/states").then(
       (result) => {
         this.setState({
+      validationError:'',
           StateData: result.data.states
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data
+      });
       })
   }
 
   changeDistrict = (e) => {
     const val = e.target.value;
     this.setState({
+      validationError:'',
       StateId: val
     });
     const obj = {
@@ -47,11 +52,13 @@ export default class AddCourt extends Component {
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
+      validationError:'',
         [field]: val
     });
 }
 
-addCourtHandler = () => {
+addCourtHandler = (e) => {
+  e.preventDefault();
   const { StateId, DistrictId, CourtId } = this.state;
   const obj = {
     state:StateId,
@@ -64,18 +71,18 @@ addCourtHandler = () => {
   axios.post("http://localhost:5000/addCourt", qs.stringify(obj)).then(
       (result) => {
         this.setState({
-        message:"Court added successfully!"
-        });
+          validationError: ''
+      });
       }).catch((err) => {
-          this.setState({
-              error: "Something went wrong"
-          });
+        this.setState({
+          validationError: err.response.data
+      });
       })
 
 }
 
   render() {
-    const {StateId, DistrictId, CourtId} = this.state;
+    const {StateId, DistrictId, CourtId,validationError} = this.state;
     return (
       <React.Fragment>
         <div className="container mt-5">
@@ -84,35 +91,39 @@ addCourtHandler = () => {
             <div className="col-9 shadow m-5 border rounded form-container">
               <h3 class="form-header mt-4">Add Court</h3>
               <form>
-                <div class="form-group mx-5">
+                <div class="form-group mx-5 mt-2">
                   <label for="stateInput">State</label>
-                  <select className="form-control mb-3" name="state" id="stateInput" value={StateId} onChange={(e) => this.changeDistrict(e)} >
-                    <option>Select State</option>
+                  <select className="form-control mb-2" name="state" id="stateInput" value={StateId} onChange={(e) => this.changeDistrict(e)} >
+                    <option value="">Select State</option>
                     {this.state.StateData.map((e, key) => {
                       return <option key={key} value={e.state}>{e.state}</option>;
                     })}
                   </select>
+                  <span className="text-danger mb-2">{validationError.state}</span>
                 </div>
 
-                <div class="form-group mx-5">
+                <div class="form-group mx-5 mt-2">
                   <label for="districtInput">District</label>
-                  <select className="form-control mb-3" name="district" id="districtInput" value={DistrictId} onChange={(e) => this.handleChange(e, 'DistrictId')}>
-                    <option>Select District</option>
+                  <select className="form-control mb-2" name="district" id="districtInput" value={DistrictId} onChange={(e) => this.handleChange(e, 'DistrictId')}>
+                    <option value="">Select District</option>
                     {this.state.DistrictData.map((e, key) => {
                       return <option key={key} value={e.district}>{e.district}</option>;
                     })}
                   </select>
+                  <span className="text-danger mb-2">{validationError.district}</span>
                 </div>
 
-                <div class="form-group mx-5">
+                <div class="form-group mx-5 mt-2">
                   <label for="courtInput">Court</label>
-                  <input class="form-control mb-3" id="courtInput" value={CourtId} onChange={(e) => this.handleChange(e, 'CourtId')}/>
+                  <input class="form-control mb-2" id="courtInput" value={CourtId} onChange={(e) => this.handleChange(e, 'CourtId')}/>
+                  <span className="text-danger mb-4">{validationError.court}</span>
                 </div>
                 <div class="text-center">
-                  <button class=" rounded form-btn mb-5" onClick={this.addCourtHandler}>Submit</button>
+                  <button class=" rounded form-btn mt-5 mb-2" onClick={this.addCourtHandler}>Submit</button>
                 </div>
+                <span className="text-danger">{validationError.message}</span>
               </form></div>
-            <div className="col-2  "></div>
+            <div className="col-2  mt-4 "></div>
           </div>
 
         </div>

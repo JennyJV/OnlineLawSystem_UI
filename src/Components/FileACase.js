@@ -5,22 +5,23 @@ import LawAutoComplete from './LawAutoComplete';
 import reactDom from 'react-dom';
 
 export default class FileACase extends Component {
-  
+
   constructor(props) {
     super(props)
     this.state = {
       petitionerName: '',
       petitionerEmail: '',
       accusedName: '',
-      accusedAddress:'',
+      accusedAddress: '',
       StateId: '',
       DistrictId: '',
       court: '',
       expertise: '',
+      caseType: '',
       ipc: '',
       StateData: [],
       DistrictData: [],
-      CourtData:[],
+      CourtData: [],
       LawyerData: [],
       expertiseData: []
     }
@@ -36,7 +37,7 @@ export default class FileACase extends Component {
         console.log("Something went wrong");
       })
 
-      axios.get("http://localhost:5000/expertise").then(
+    axios.get("http://localhost:5000/expertise").then(
       (result) => {
         this.setState({
           expertiseData: result.data.expertise
@@ -99,7 +100,7 @@ export default class FileACase extends Component {
         console.log("Something went wrong");
       })
   }
-  
+
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
@@ -108,32 +109,33 @@ export default class FileACase extends Component {
   }
 
   caseFileHandler = () => {
-    const { petitionerName, petitionerEmail, accusedName,accusedAddress,court,lawyer,ipc} = this.state;
+    const { petitionerName, petitionerEmail, accusedName, accusedAddress, caseType, court, lawyer, ipc } = this.state;
     const node = reactDom.findDOMNode(this);
-      const obj = {
-      petitionerName:petitionerName,
-      petitionerEmail:petitionerEmail,
-      accusedName:accusedName,
-      accusedAddress:accusedAddress,
-      court:court,
-      lawyer:lawyer,
-      ipc:node.querySelector('#law-autocomplete').value
+    const obj = {
+      petitionerName: petitionerName,
+      petitionerEmail: petitionerEmail,
+      accusedName: accusedName,
+      accusedAddress: accusedAddress,
+      court: court,
+      lawyer: lawyer,
+      caseType: caseType,
+      ipc: node.querySelector('#law-autocomplete').value
     };
     alert(qs.stringify(obj));
     axios.post("http://localhost:5000/fileCase", qs.stringify(obj)).then(
       (result) => {
         this.setState({
-        message:"Case added successfully!"
+          message: "Case added successfully!"
         });
       }).catch((err) => {
-          this.setState({
-              error: "Something went wrong"
-          });
+        this.setState({
+          error: "Something went wrong"
+        });
       })
   }
 
   render() {
-    const { petitionerName, petitionerEmail, accusedName, accusedAddress, StateId, DistrictId, court, expertise, lawyer } = this.state;
+    const { petitionerName, petitionerEmail, accusedName, accusedAddress, StateId, DistrictId, court, expertise, lawyer, caseType } = this.state;
     return (
       <>
         <div className="container mt-5">
@@ -158,6 +160,14 @@ export default class FileACase extends Component {
                   <div class="form-group mx-5">
                     <label for="accusedAddressInput">Accused Address</label>
                     <textarea class="form-control mb-3" id="accusedAddressInput" value={accusedAddress} onChange={(e) => this.handleChange(e, 'accusedAddress')} />
+                  </div>
+                  <div class="form-group mx-5">
+                    <label for="caseTypeInput">Case Type</label>
+                    <select class="form-select mb-3" id="caseTypeInput" value={caseType} onChange={(e) => this.handleChange(e, 'caseType')}>
+                      <option>Select Case Type</option>
+                      <option value="Civil">Civil</option>
+                      <option value="Criminal">Criminal</option>
+                    </select>
                   </div>
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5">
@@ -185,11 +195,11 @@ export default class FileACase extends Component {
                   <div class="form-group mx-5">
                     <label for="lawInput">Choose Lawyer by Expertise</label>
                     <select className="form-control mb-3" name="expertise" id="expertise" value={expertise} onChange={(e) => this.loadLawyer(e)} >
-                          <option>Select Area of Expertise</option>
-                          {this.state.expertiseData.map((e, key) => {
-                            return <option key={key} value={e.expertise}>{e.expertise}</option>;
-                          })}
-                        </select>
+                      <option>Select Area of Expertise</option>
+                      {this.state.expertiseData.map((e, key) => {
+                        return <option key={key} value={e.expertise}>{e.expertise}</option>;
+                      })}
+                    </select>
                     <select className="form-control mb-3" name="lawyer" id="lawyerInput" value={lawyer} onChange={(e) => this.handleChange(e, 'lawyer')}>
                       <option>Select Lawyer</option>
                       {this.state.LawyerData.map((e, key) => {
@@ -200,7 +210,7 @@ export default class FileACase extends Component {
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5">
                     <label for="lawInput">Search Law</label>
-                    <LawAutoComplete/>
+                    <LawAutoComplete />
                   </div>
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5 text-center">

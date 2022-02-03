@@ -12,28 +12,69 @@ export default class CaseReport extends Component {
     super(props)
 
     this.state = {
-      caseData: []
+      caseByYear:'',
+      caseByType:'',
+      caseData: [],
+      noData: false,
+      years: []
     }
-    const { products } = this.state;
 
   }
 
   componentDidMount() {
     //Replace with current user name 
     const obj = {
-      userId: "Vageesan@gmail.com",
-      role: "public"
+      userId: "V@gmail.com",
+      role: "admin"
     };
     axios.post("http://localhost:5000/getCaseByUser", qs.stringify(obj)).then(
       (result) => {
-        console.log(result.data.cases)
+        alert(result.data.cases.length);
+        this.setState({
+          caseData: result.data.cases,
+          years: result.data.years
+        });
+        if(this.state.caseData.length<1){
+          this.setState({noData: true});
+        }
+      }).catch((result) => {
+        alert("catch");
+        this.setState({
+          caseData: []
+        });
+           console.log("Something went wrong");
+      })
+  }
+  handleChange = (e, field) => {
+    const val = e.target.value;
+    this.setState({
+        [field]: val
+    });
+}
+
+filterHandler = (e) => {
+  e.preventDefault();
+  const { caseByType, caseByYear } = this.state;
+  const obj = {
+    caseByType:caseByType,
+    caseByYear:caseByYear
+  };
+  alert(caseByType);
+  alert(caseByYear);
+    axios.post("http://localhost:5000/FilterCase", qs.stringify(obj)).then(
+      (result) => {
         this.setState({
           caseData: result.data.cases
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        
+          this.setState({
+            caseData:[],
+              error: "Something went wrong"
+          });
       })
-  }
+
+}
   render() {
     const caseColumns = [{
       dataField: 'caseID',
@@ -64,22 +105,45 @@ export default class CaseReport extends Component {
       text: 'IPC Section',
       sort: true
     }, {
-      dataField: 'casestatus',
-      text: 'Status',
+      dataField: 'caseType',
+      text: 'Case Type',
       sort: true
-    }, {
+    } ,{
       dataField: 'year',
       text: 'Year',
       sort: true
+    }, {
+      dataField: 'casestatus',
+      text: 'Status',
+      sort: true
     }];
-
+    const {caseByYear, caseByType} = this.state;
+    
     return (
       <>
         <link rel="stylesheet" href="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table-all.min.css">
         </link>
         <div className='container body-container'>
+          <h3 class="form-header mt-4">Case Report</h3>
+          <form>
+          <div align="right">
+            <select class="mb-3" id="caseTypeInput" value={caseByType} onChange={(e) => this.handleChange(e, 'caseByType')}>
+              <option>Select Case Type</option>
+              <option value="Civil">Civil</option>
+              <option value="Criminal">Criminal</option>
+            </select>
+            <select class=" mx-3" id="caseYearInput" value={caseByYear} onChange={(e) => this.handleChange(e, 'caseByYear')}>
+              <option>Select Year</option>
+              {this.state.years.map(filedYear => {
+                return <option key={filedYear} value={filedYear}>{filedYear}</option>;
+              })}
+            </select>
+            <button class=" rounded form-btn mb-5"  onClick={this.filterHandler}>Filter</button>
+          </div>
+          </form>
           
-          <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns}   striped hover condensed pagination={ paginationFactory() }  />
+          <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover condensed pagination={paginationFactory()} />
+          
         </div>
       </>
     );

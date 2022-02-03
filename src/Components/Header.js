@@ -39,8 +39,8 @@ class Header extends Component {
             role: '',
             user: undefined,
             isLoggedIn: false,
-            loginError: undefined,
-            signUpError: undefined
+            loginError: '',
+            signUpError: ''
         };
     }
 
@@ -50,6 +50,9 @@ class Header extends Component {
 
     openLoginModal = () => {
         this.setState({
+            email: '',
+            password: '',
+            loginError: '',
             isLoginModalOpen: true
         });
     }
@@ -60,40 +63,15 @@ class Header extends Component {
         });
     }
 
-    loginHandler = () => {
-        const { email, password } = this.state;
-        const obj = {
-            email: email,
-            password: password
-        };
-        axios.post("http://localhost:5000/login", qs.stringify(obj)).then(
-            (result) => {
-                localStorage.setItem("user", JSON.stringify(result.data.user));
-                localStorage.setItem("role", JSON.stringify(result.data.role));
-                localStorage.setItem("isLoggedIn", true);
-                this.setState({
-                    user: result.data.user,
-                    role: result.data.role,
-                    isLoggedIn: true,
-                    loginError: undefined,
-                    isLoginModalOpen: false
-                });
-            }).catch((err) => {
-                this.setState({
-                    isLoggedIn: false,
-                    loginError: "Username or Password is incorrect"
-                });
-            })
-
-    }
-
-
-    loginCancelHandler = () => {
-        this.closeLoginModal();
-    }
-
     openSignupModal = () => {
         this.setState({
+            email: '',
+            password: '',
+            password2: '',
+            name: '',
+            aadhar: '',
+            role: '',
+            signUpError: '',
             isSignupModalOpen: true
         })
     }
@@ -104,7 +82,34 @@ class Header extends Component {
         });
     }
 
-    signupHandler = () => {
+    loginHandler = () => {
+        const { email, password } = this.state;
+        const obj = {
+            email: email,
+            password: password
+        };
+
+        axios.post("http://localhost:5000/login", qs.stringify(obj)).then(
+            (result) => {
+                localStorage.setItem("user", JSON.stringify(result.data.user));
+                localStorage.setItem("isLoggedIn", true);
+                this.setState({
+                    user: result.data.user,
+                    isLoggedIn: true,
+                    loginError: '',
+                    isLoginModalOpen: false
+                });
+            }).catch((err) => {
+                this.setState({
+                    isLoggedIn: false,
+                    loginError: err.response.data
+                });
+            })
+
+    }
+
+    signupHandler = (e) => {
+        e.preventDefault();
         const { name, email, password, password2, aadhar, role } = this.state;
         const obj = {
             name: name,
@@ -119,58 +124,38 @@ class Header extends Component {
                 localStorage.setItem("isLoggedIn", false);
                 this.setState({
                     isLoggedIn: false,
-                    loginError: undefined,
-                    isLoginModalOpen: false
+                    signUpError: '',
+                    isSignupModalOpen: false
                 });
             }).catch((err) => {
                 this.setState({
                     isLoggedIn: false,
-                    loginError: "Registration failed"
+                    signUpError: err.response.data
                 });
             })
 
-    }
-
-    signupCancelHandler = () => {
-        this.closeSignupModal();
-    }
-
-    checkmessage = () => {
-        alert(this.role);
-    }
-
-    toggleAuth = (auth) => {
-        if (auth === 'login') {
-            this.signupCancelHandler();
-            this.openLoginModal();
-        } else {
-            this.loginCancelHandler();
-            this.openSignupModal();
-        }
     }
 
     handleChange = (e, field) => {
         const val = e.target.value;
         this.setState({
             [field]: val,
-            loginError: undefined,
-            signUpError: undefined
+            loginError: '',
+            signUpError: ''
         });
     }
 
     logout = () => {
         localStorage.removeItem("user");
-        localStorage.removeItem("role")
         localStorage.removeItem("isLoggedIn");
         this.setState({
             user: undefined,
-            role: undefined,
             isLoggedIn: false
         });
     }
 
     render() {
-        const { isLoginModalOpen, isSignupModalOpen, email, password, password2, name, user, role, aadhar, loginError, isLoggedIn } = this.state;
+        const { isLoginModalOpen, isSignupModalOpen, email, password, password2, name, user, aadhar, loginError, signUpError, isLoggedIn } = this.state;
         return (
             <React.Fragment>
                 <div className="header">
@@ -182,7 +167,7 @@ class Header extends Component {
                             <span class="text-white heading"> Online Law System</span>
                         </div><div className="col-4">
                             <button className="signup-button" onClick={this.goToHome}>Home</button>
-                            <Link to='/CaseReport'><button className="signup-button">About</button></Link>
+                            <Link to='/VerifyCase'><button className="signup-button">About</button></Link>
                             {(() => {
                                 if (isLoggedIn) {
                                     if ("admin" == user.role) {
@@ -250,46 +235,66 @@ class Header extends Component {
                     </div>
                 </div>
                 <Modal isOpen={isLoginModalOpen} style={customStyles}>
+                    <div class="row">
+                        <div class="col-2"> <h2 className="popup-heading">
+                            Login </h2></div>
+                        <div class="col-3"> <img
+                            className="d-block w-80"
+                            src={require('../Assets/login1.jpg').default}
+                            height="80px"
+                        /></div>
+                        <div class="col-7" align="right"> <button className="float-end btn btn-close mt-2" onClick={this.closeLoginModal}></button></div>
 
-                    <h3 className="popup-heading">
-                        Login
-                        <button className="float-end btn btn-close mt-2" onClick={this.closeLoginModal}></button>
-                    </h3>
+                    </div>
                     <form className="my-4">
                         <label for="username" class="sr-only">Email</label>
-                        <input id="username" className="form-control my-2" type="text" value={email} required onChange={(e) => this.handleChange(e, 'email')} />
-                        <label for="pwd" class="sr-only">Password</label>
-                        <input id="pwd" className="form-control my-2" type="password" value={password} required onChange={(e) => this.handleChange(e, 'password')} />
-                        <input type="button" className="btn-primary form-control login-btn my-4" onClick={this.loginHandler} value="Login" />
+                        <input id="username" className="form-control mt-3" type="text" value={email} required onChange={(e) => this.handleChange(e, 'email')} />
+                        <span className="text-danger mt-2 mb-3">{loginError.email}</span><br/>
+                        <label for="pwd" class="sr-only ">Password</label>
+                        <input id="pwd" className="form-control mt-3" type="password" value={password} required onChange={(e) => this.handleChange(e, 'password')} />
+                        <span className="text-danger mt-2">{loginError.password}</span>
+                        <input type="button" className="btn-primary form-control login-btn my-5" onClick={this.loginHandler} value="Login" />
+                        <span className="text-danger">{loginError.message}</span>
                     </form>
 
-                    <hr className="my-2" />
-                    <div className="bottom-text">
-                        Not a member? <button className="text-danger btn m-0 p-0" onClick={() => this.toggleAuth('signup')}>Register</button>
-                    </div>
+
+
                 </Modal>
                 <Modal isOpen={isSignupModalOpen} style={customStyles}>
-                    <h2 className="popup-heading">
-                        Register
-                        <button className="float-end btn btn-close mt-2" onClick={this.closeSignupModal}></button>
-                    </h2>
+                    <div class="row">
+                        <div class="col-4"> <h2 className="popup-heading">
+                            Register </h2></div>
+                        <div class="col-4"> <img
+                            className="d-block w-80"
+                            src={require('../Assets/register1.jpg').default}
+                            height="80px"
+                        /></div>
+                        <div class="col-4" align="right"> <button className="float-end btn btn-close mt-2" onClick={this.closeSignupModal}></button></div>
+
+                    </div>
+
                     <form className="my-4">
                         <input className="form-control my-3" type="text" placeholder="Full Name" value={name} onChange={(e) => this.handleChange(e, 'name')} />
+                        <span className="text-danger">{signUpError.name}</span>
                         <input className="form-control my-3" type="text" placeholder="Email" value={email} onChange={(e) => this.handleChange(e, 'email')} />
+                        <span className="text-danger">{signUpError.email}</span>
                         <input className="form-control my-3" type="text" placeholder="Aadhar number" value={aadhar} onChange={(e) => this.handleChange(e, 'aadhar')} />
+                        <span className="text-danger">{signUpError.aadhar}</span>
                         <input className="form-control my-3" type="password" placeholder="Password" value={password} onChange={(e) => this.handleChange(e, 'password')} />
+                        <span className="text-danger">{signUpError.password}</span>
                         <input className="form-control my-3" type="password" placeholder="Confirm Password" value={password2} onChange={(e) => this.handleChange(e, 'password2')} />
+                        <span className="text-danger">{signUpError.password2}</span>
                         <select class="form-control my-3" onChange={(e) => this.handleChange(e, 'role')}>
-                            <option value="none">Select Role</option>
+                            <option value="">Select Role</option>
                             <option value="public">Public</option>
                             <option value="lawyer">Lawyer</option>
                         </select>
-                        <button className="btn-primary form-control login-btn my-4" onClick={this.signupHandler}>Register</button>
+                        <span className="text-danger">{signUpError.role}</span>
+                        <button className="btn-primary form-control login-btn my-5" onClick={this.signupHandler}>Register</button>
+                        <span className="text-danger">{signUpError.message}</span>
                     </form>
-                    <hr className="my-2" />
-                    <div className="bottom-text">
-                        Already have an account? <button className="text-danger btn m-0 p-0" onClick={() => this.toggleAuth('login')}>Login</button>
-                    </div>
+
+
                 </Modal>
 
             </React.Fragment>

@@ -6,7 +6,7 @@ import paginationFactory from 'react-bootstrap-table2-paginator';
 <script src="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table.min.js" />
 
 
-export default class VerifyCase extends Component {
+export default class FileCase extends Component {
 
   constructor(props) {
     super(props)
@@ -22,7 +22,7 @@ export default class VerifyCase extends Component {
     const obj = {
       userId: "Latha@gmail.com"
     };
-    axios.post("http://localhost:5000/getnewCases", qs.stringify(obj)).then(
+    axios.post("http://localhost:5000/getAcceptedCases", qs.stringify(obj)).then(
       (result) => {
         console.log(result.data.cases)
         this.setState({
@@ -39,18 +39,19 @@ export default class VerifyCase extends Component {
       [field]: val
     });
   }
-  verifyHandler = (e) => {
-    const { caseToVerify } = this.state;
-    alert(caseToVerify);
+
+  fileHandler = (e) => {
+    const { caseToFile } = this.state;
+    alert(caseToFile);
     alert(e);
     const obj = {
-      caseId: caseToVerify,
+      caseId: caseToFile,
       status: e
     };
     axios.post("http://localhost:5000/updateCaseStatus", qs.stringify(obj)).then(
       (result) => {
         this.setState({
-          message: "Case status changed successfully!"
+          message: "Case filed successfully!"
         });
       }).catch((err) => {
         this.setState({
@@ -87,7 +88,7 @@ export default class VerifyCase extends Component {
       dataField: 'casestatus',
       text: 'Status'
     }];
-    const { caseToVerify } = this.state;
+    const { caseToFile } = this.state;
     return (
       <>
       <form>
@@ -95,18 +96,17 @@ export default class VerifyCase extends Component {
         </link>
         <div className='container body-container'>
         <div align="center">
-          <select className="mb-3" name="caseSelect" id="caseSelect" value={caseToVerify} onChange={(e) => this.handleChange(e, 'caseToVerify')}>
+          <select className="mb-3" name="caseSelect" id="caseSelect" value={caseToFile} onChange={(e) => this.handleChange(e, 'caseToFile')}>
             <option>Select a Case ID</option>
             {this.state.caseData.map((e, key) => {
               return <option key={key} value={e.caseID}>{e.caseID}</option>;
             })}
           </select>
           <div align="center">
-          <button class=" rounded form-btn  mb-5" onClick={(e) => this.verifyHandler("Accepted")}>Accept</button>
-          <button class=" rounded form-btn mx-3 mb-5" onClick={(e) => this.verifyHandler("Rejected")}>Reject</button>
+          <button class=" rounded form-btn  mb-5" onClick={(e) => this.fileHandler("Filed")}>File</button>
          </div>
          </div>
-         <h3 class="form-header mt-4">New Case Report</h3>
+         <h3 class="form-header mt-4">Accepted Case Report</h3>
           <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover  pagination={paginationFactory()} />
         </div>
         </form>

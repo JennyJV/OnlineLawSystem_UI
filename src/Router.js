@@ -15,6 +15,7 @@ import FileACase from './Components/FileACase';
 import LawAutoComplete from './Components/LawAutoComplete';
 import CaseReport from './Components/CaseReport';
 import VerifyCase from './Components/VerifyCase';
+import FileCase from './Components/FileCase';
 
 export default class Router extends Component {
     render() {
@@ -34,7 +35,8 @@ export default class Router extends Component {
                 <Route path="/LawAutoComplete" component={LawAutoComplete} />
                 <Route path="/CaseReport" component={CaseReport} />
                 <Route path="/VerifyCase" component={VerifyCase} />
-                
+                <Route path="/FileCase" component={FileCase} />
+
                 <Footer/>
                 
             </BrowserRouter>
