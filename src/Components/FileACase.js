@@ -17,24 +17,34 @@ export default class FileACase extends Component {
       DistrictId: '',
       court: '',
       expertise: '',
+      lawyer:'',
       caseType: '',
       ipc: '',
       StateData: [],
       DistrictData: [],
       CourtData: [],
       LawyerData: [],
-      expertiseData: []
+      expertiseData: [],
+      validationError: ''
     }
   }
 
   componentDidMount() {
+    if(localStorage.getItem("isLoggedIn")&&(localStorage.getItem("role")=="public")){
+      this.setState({
+        petitionerName: localStorage.getItem("fullName"),
+        petitionerEmail:localStorage.getItem("user"),
+        validationError: '',
+      });
     axios.get("http://localhost:5000/states").then(
       (result) => {
         this.setState({
           StateData: result.data.states
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data
+        });
       })
 
     axios.get("http://localhost:5000/expertise").then(
@@ -43,15 +53,50 @@ export default class FileACase extends Component {
           expertiseData: result.data.expertise
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data
+        });
       })
+  }else{
+    this.goToHome();
   }
+}
+
+clearHandler=(e)=>{
+ 
+  this.setState({
+    accusedName: '',
+    accusedAddress: '',
+    StateId: '',
+    DistrictId: '',
+    court: '',
+    expertise: '',
+    lawyer:'',
+    caseType: '',
+    ipc: '',
+    validationError: ''
+  })
+  const node = reactDom.findDOMNode(this);
+  node.querySelector('#law-autocomplete').value="";
+}
+goToHome = () => {
+  this.props.history.push('/');
+}
 
   loadDistrict = (e) => {
     const val = e.target.value;
     this.setState({
-      StateId: val
+      StateId: val,
+      validationError:''
     });
+    if(val.trim()==""){
+      this.setState({
+        DistrictData: [],
+        CourtData:[],
+        StateId:'',
+        DistrictId:'',
+        court:''
+      });}else{
     const obj = {
       state: val
     };
@@ -61,15 +106,26 @@ export default class FileACase extends Component {
           DistrictData: result.data.districts,
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data
+        });
       })
+    }
   }
 
   loadCourt = (e) => {
     const val = e.target.value;
     this.setState({
-      DistrictId: val
+      DistrictId: val,
+      validationError:''
     });
+    if(val.trim()==""){
+      this.setState({
+        CourtData: [],
+        DistrictId:'',
+        court:''
+      });    }
+      else{
     const obj = {
       district: val
     };
@@ -79,15 +135,26 @@ export default class FileACase extends Component {
           CourtData: result.data.courts,
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data
+        });
       })
+    }
   }
 
   loadLawyer = (e) => {
     const val = e.target.value;
+    alert(val);
     this.setState({
-      expertise: val
+      expertise: val,
+      validationError:''
     });
+    if(val.trim()==""){
+      this.setState({
+        LawyerData: [],
+        expertise:'',
+        lawyer:''
+      });    }else{    
     const obj = {
       expertise: val
     };
@@ -97,18 +164,23 @@ export default class FileACase extends Component {
           LawyerData: result.data.lawyers,
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data
+        });
       })
+    }
   }
 
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
-      [field]: val
+      [field]: val,
+      validationError:''
     });
   }
 
-  caseFileHandler = () => {
+  caseFileHandler = (e) => {
+e.preventDefault();
     const { petitionerName, petitionerEmail, accusedName, accusedAddress, caseType, court, lawyer, ipc } = this.state;
     const node = reactDom.findDOMNode(this);
     const obj = {
@@ -125,17 +197,17 @@ export default class FileACase extends Component {
     axios.post("http://localhost:5000/fileCase", qs.stringify(obj)).then(
       (result) => {
         this.setState({
-          message: "Case added successfully!"
+          validationError: ''
         });
       }).catch((err) => {
         this.setState({
-          error: "Something went wrong"
+          validationError: err.response.data
         });
       })
   }
 
   render() {
-    const { petitionerName, petitionerEmail, accusedName, accusedAddress, StateId, DistrictId, court, expertise, lawyer, caseType } = this.state;
+    const { petitionerName, petitionerEmail, accusedName, accusedAddress, StateId, DistrictId, court, expertise, lawyer, caseType, validationError } = this.state;
     return (
       <>
         <div className="container mt-5">
@@ -147,75 +219,83 @@ export default class FileACase extends Component {
                 <div class="form-group mx-5">
                   <div class="form-group mx-5">
                     <label for="petitionerNameInput">Petitioner Full Name</label>
-                    <input class="form-control mb-3" id="petitionerNameInput" value={petitionerName} onChange={(e) => this.handleChange(e, 'petitionerName')} />
+                    <input class="form-control mb-2" id="petitionerNameInput" value={petitionerName} readOnly />
                   </div>
                   <div class="form-group mx-5">
                     <label for="petitionerEmailInput">Petitioner Email</label>
-                    <input class="form-control mb-3" id="petitionerEmailInput" type="email" value={petitionerEmail} onChange={(e) => this.handleChange(e, 'petitionerEmail')} />
+                    <input class="form-control mb-2" id="petitionerEmailInput" type="email" value={petitionerEmail} readOnly />
                   </div>
                   <div class="form-group mx-5">
                     <label for="accusedNameInput">Accused Full Name</label>
-                    <input class="form-control mb-3" id="accusedNameInput" value={accusedName} onChange={(e) => this.handleChange(e, 'accusedName')} />
+                    <input class="form-control mb-2" id="accusedNameInput" value={accusedName} onChange={(e) => this.handleChange(e, 'accusedName')} />
+                    <span className="text-danger mb-2">{validationError.accusedName}</span>
                   </div>
                   <div class="form-group mx-5">
                     <label for="accusedAddressInput">Accused Address</label>
-                    <textarea class="form-control mb-3" id="accusedAddressInput" value={accusedAddress} onChange={(e) => this.handleChange(e, 'accusedAddress')} />
+                    <textarea class="form-control mb-2" id="accusedAddressInput" value={accusedAddress} onChange={(e) => this.handleChange(e, 'accusedAddress')} />
+                    <span className="text-danger mb-2">{validationError.accusedAddress}</span>
                   </div>
                   <div class="form-group mx-5">
                     <label for="caseTypeInput">Case Type</label>
-                    <select class="form-select mb-3" id="caseTypeInput" value={caseType} onChange={(e) => this.handleChange(e, 'caseType')}>
-                      <option>Select Case Type</option>
+                    <select class="form-select mb-2" id="caseTypeInput" value={caseType} onChange={(e) => this.handleChange(e, 'caseType')}>
+                      <option value="">Select Case Type</option>
                       <option value="Civil">Civil</option>
                       <option value="Criminal">Criminal</option>
                     </select>
+                    <span className="text-danger mb-2">{validationError.caseType}</span>
                   </div>
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5">
                     <label for="courttInput">Choose Court By District</label>
-                    <select className="form-control mb-3" name="state" id="stateInput" value={StateId} onChange={(e) => this.loadDistrict(e)} >
-                      <option>Select State</option>
+                    <select className="form-control mb-2" name="state" id="stateInput" value={StateId} onChange={(e) => this.loadDistrict(e)} >
+                      <option value="">Select State</option>
                       {this.state.StateData.map((e, key) => {
                         return <option key={key} value={e.state}>{e.state}</option>;
                       })}
                     </select>
-                    <select className="form-control mb-3" name="district" id="districtInput" value={DistrictId} onChange={(e) => this.loadCourt(e)}>
-                      <option>Select District</option>
+                    <select className="form-control mb-2" name="district" id="districtInput" value={DistrictId} onChange={(e) => this.loadCourt(e)}>
+                      <option value="">Select District</option>
                       {this.state.DistrictData.map((e, key) => {
                         return <option key={key} value={e.district}>{e.district}</option>;
                       })}
                     </select>
-                    <select className="form-control mb-3" name="court" id="courttInput" value={court} onChange={(e) => this.handleChange(e, 'court')}>
-                      <option>Select Court</option>
+                    <select className="form-control mb-2" name="court" id="courttInput" value={court} onChange={(e) => this.handleChange(e, 'court')}>
+                      <option value="">Select Court</option>
                       {this.state.CourtData.map((e, key) => {
                         return <option key={key} value={e.court}>{e.court}</option>;
                       })}
                     </select>
+                    <span className="text-danger mb-2">{validationError.court}</span>
                   </div>
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5">
                     <label for="lawInput">Choose Lawyer by Expertise</label>
-                    <select className="form-control mb-3" name="expertise" id="expertise" value={expertise} onChange={(e) => this.loadLawyer(e)} >
-                      <option>Select Area of Expertise</option>
+                    <select className="form-control mb-2" name="expertise" id="expertise" value={expertise} onChange={(e) => this.loadLawyer(e)} >
+                      <option value="">Select Area of Expertise</option>
                       {this.state.expertiseData.map((e, key) => {
                         return <option key={key} value={e.expertise}>{e.expertise}</option>;
                       })}
                     </select>
-                    <select className="form-control mb-3" name="lawyer" id="lawyerInput" value={lawyer} onChange={(e) => this.handleChange(e, 'lawyer')}>
-                      <option>Select Lawyer</option>
+                    <select className="form-control mb-2" name="lawyer" id="lawyerInput" value={lawyer} onChange={(e) => this.handleChange(e, 'lawyer')}>
+                      <option value="">Select Lawyer</option>
                       {this.state.LawyerData.map((e, key) => {
                         return <option key={key} value={e.email}>{e.name}</option>;
                       })}
                     </select>
+                    <span className="text-danger mb-2">{validationError.lawyer}</span>
                   </div>
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5">
                     <label for="lawInput">Search Law</label>
                     <LawAutoComplete />
+                    <span className="text-danger mb-2">{validationError.ipc}</span>
                   </div>
                   <span class="form-group mx-5"></span>
                   <div class="form-group mx-5 text-center">
-                    <button class=" rounded form-btn mx-5 mb-5" onClick={this.caseFileHandler}>File</button>
+                  <button class=" rounded form-btn mx-3 mb-5 " onClick={this.caseFileHandler}>File</button>
+                  <button class=" rounded form-btn mt-5 mb-2" onClick={this.clearHandler}>Clear</button>
                   </div>
+                  <span className="text-danger mb-4">{validationError.message}</span>
                 </div>
               </form>
             </div>

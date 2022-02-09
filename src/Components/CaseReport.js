@@ -16,39 +16,49 @@ export default class CaseReport extends Component {
       caseByType:'',
       caseData: [],
       noData: false,
-      years: []
+      years: [],
+      validationError:''
     }
 
   }
 
   componentDidMount() {
+    if(localStorage.getItem("isLoggedIn")){
     //Replace with current user name 
     const obj = {
-      userId: "V@gmail.com",
-      role: "admin"
+      userId: localStorage.getItem("user"),
+      role: localStorage.getItem("role")
     };
     axios.post("http://localhost:5000/getCaseByUser", qs.stringify(obj)).then(
       (result) => {
-        alert(result.data.cases.length);
         this.setState({
           caseData: result.data.cases,
-          years: result.data.years
+          years: result.data.years,
+          validationError:''
         });
-        if(this.state.caseData.length<1){
-          this.setState({noData: true});
-        }
-      }).catch((result) => {
-        alert("catch");
+      }).catch((err) => {
         this.setState({
-          caseData: []
+          caseData: [],
+          noData:true,
+          validationError: err.response.data
         });
            console.log("Something went wrong");
       })
+      
+    }else{
+      this.goToHome();
+    }
   }
+
+  goToHome = () => {
+    this.props.history.push('/');
+}
+
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
-        [field]: val
+        [field]: val,
+        validationError:''
     });
 }
 
@@ -59,18 +69,18 @@ filterHandler = (e) => {
     caseByType:caseByType,
     caseByYear:caseByYear
   };
-  alert(caseByType);
-  alert(caseByYear);
     axios.post("http://localhost:5000/FilterCase", qs.stringify(obj)).then(
       (result) => {
         this.setState({
+          validationError:'',
           caseData: result.data.cases
         });
       }).catch((err) => {
         
           this.setState({
             caseData:[],
-              error: "Something went wrong"
+            noData:true,
+            validationError: err.response.data
           });
       })
 
@@ -117,23 +127,31 @@ filterHandler = (e) => {
       text: 'Status',
       sort: true
     }];
-    const {caseByYear, caseByType} = this.state;
+    const {caseByYear, caseByType,validationError} = this.state;
     
     return (
       <>
+      <div>
+      
+    </div>
         <link rel="stylesheet" href="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table-all.min.css">
         </link>
-        <div className='container body-container'>
+        <div className='container'>
           <h3 class="form-header mt-4">Case Report</h3>
+          {(() => {
+                                
+                                    if ("admin" == localStorage.getItem("role")) {
+                                        return (
+                                            <>
           <form>
           <div align="right">
             <select class="mb-3" id="caseTypeInput" value={caseByType} onChange={(e) => this.handleChange(e, 'caseByType')}>
-              <option>Select Case Type</option>
+              <option value="">Select Case Type</option>
               <option value="Civil">Civil</option>
               <option value="Criminal">Criminal</option>
             </select>
             <select class=" mx-3" id="caseYearInput" value={caseByYear} onChange={(e) => this.handleChange(e, 'caseByYear')}>
-              <option>Select Year</option>
+              <option value="">Select Year</option>
               {this.state.years.map(filedYear => {
                 return <option key={filedYear} value={filedYear}>{filedYear}</option>;
               })}
@@ -141,9 +159,11 @@ filterHandler = (e) => {
             <button class=" rounded form-btn mb-5"  onClick={this.filterHandler}>Filter</button>
           </div>
           </form>
+          </>
+                                        )}})()}
           
           <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover condensed pagination={paginationFactory()} />
-          
+          <span className="text-danger mb-3">{validationError.message}</span>
         </div>
       </>
     );

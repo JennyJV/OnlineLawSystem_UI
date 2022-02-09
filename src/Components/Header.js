@@ -91,7 +91,9 @@ class Header extends Component {
 
         axios.post("http://localhost:5000/login", qs.stringify(obj)).then(
             (result) => {
-                localStorage.setItem("user", JSON.stringify(result.data.user));
+                localStorage.setItem("user", result.data.user.email);
+                localStorage.setItem("role", result.data.user.role);
+                localStorage.setItem("fullName",result.data.user.name);
                 localStorage.setItem("isLoggedIn", true);
                 this.setState({
                     user: result.data.user,
@@ -99,6 +101,7 @@ class Header extends Component {
                     loginError: '',
                     isLoginModalOpen: false
                 });
+                this.goToHome();
             }).catch((err) => {
                 this.setState({
                     isLoggedIn: false,
@@ -147,11 +150,14 @@ class Header extends Component {
 
     logout = () => {
         localStorage.removeItem("user");
+        localStorage.removeItem("role");
+        localStorage.removeItem("fullName");
         localStorage.removeItem("isLoggedIn");
         this.setState({
             user: undefined,
             isLoggedIn: false
         });
+        this.goToHome();
     }
 
     render() {
@@ -167,10 +173,10 @@ class Header extends Component {
                             <span class="text-white heading"> Online Law System</span>
                         </div><div className="col-4">
                             <button className="signup-button" onClick={this.goToHome}>Home</button>
-                            <Link to='/VerifyCase'><button className="signup-button">About</button></Link>
+                            <Link to='/About'><button className="signup-button">About</button></Link>
                             {(() => {
-                                if (isLoggedIn) {
-                                    if ("admin" == user.role) {
+                                if (localStorage.getItem("isLoggedIn")) {
+                                    if ("admin" == localStorage.getItem("role")) {
                                         return (
                                             <>
                                                 <button class="dropdown-toggle menu" data-bs-toggle="dropdown">
@@ -180,31 +186,32 @@ class Header extends Component {
                                                     <li><Link class="dropdown-item" to="/AddCourt">Add Court</Link></li>
                                                     <li><Link class="dropdown-item" to="/AddLaw">Add Law</Link></li>
                                                     <li><Link class="dropdown-item" to="/AddLawyer">Add Lawyer</Link></li>
+                                                    <li><Link class="dropdown-item" to="/CaseReport">Case Report</Link></li>
                                                 </ul>
                                             </>
                                         )
-                                    } if ("lawyer" == user.role) {
+                                    } if ("lawyer" == localStorage.getItem("role")) {
                                         return (
                                             <>
                                                 <button class="dropdown-toggle menu" data-bs-toggle="dropdown">
                                                     Services
                                                 </button>
                                                 <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">View New Cases</a></li>
-                                                    <li><a class="dropdown-item" href="#">Verify Case</a></li>
-                                                    <li><a class="dropdown-item" href="#">File verified case</a></li>
+                                                    <li><Link class="dropdown-item" to="/CaseReport">View New Cases</Link></li>
+                                                    <li><Link class="dropdown-item" to="/VerifyCase">Verify Case</Link></li>
+                                                    <li><Link class="dropdown-item" to="/FileCase">File verified case</Link></li>
                                                 </ul>
                                             </>
                                         )
-                                    } if ("public" == user.role) {
+                                    } if ("public" == localStorage.getItem("role")) {
                                         return (
                                             <>
                                                 <button class="dropdown-toggle menu" data-bs-toggle="dropdown">
                                                     Services
                                                 </button>
                                                 <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#">File a case</a></li>
-                                                    <li><a class="dropdown-item" href="#">View Case Status</a></li>
+                                                    <li><Link class="dropdown-item" to="/FileACase">File a case</Link></li>
+                                                    <li><Link class="dropdown-item" to="/CaseReport">View Case Status</Link></li>
                                                 </ul>
                                             </>
                                         )
@@ -217,10 +224,10 @@ class Header extends Component {
 
                         <div className="loginSection col-5 logo">
                             {
-                                isLoggedIn
+                                localStorage.getItem("isLoggedIn")
                                     ?
                                     <>
-                                        <span className="text-white m-4">Welcome {user.name} !</span>
+                                        <span className="text-white m-4">Welcome {localStorage.getItem("fullName")} !</span>
                                         <button className="signup-button" onClick={this.logout}>Logout</button>
                                     </>
                                     :

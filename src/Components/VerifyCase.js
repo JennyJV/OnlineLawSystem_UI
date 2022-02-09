@@ -12,37 +12,48 @@ export default class VerifyCase extends Component {
     super(props)
 
     this.state = {
-      caseData: []
+      caseData: [],
+      validationError:''
     }
 
   }
 
   componentDidMount() {
+    if(!localStorage.getItem("isLoggedIn")){
+      this.goToHome();
+    }else{
     //Replace with current user name 
     const obj = {
-      userId: "Latha@gmail.com"
+      userId: localStorage.getItem("user")
     };
     axios.post("http://localhost:5000/getnewCases", qs.stringify(obj)).then(
       (result) => {
         console.log(result.data.cases)
         this.setState({
-          caseData: result.data.cases
+          caseData: result.data.cases,
+          validationError:''
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data,
+          caseData:[]
+        });
       })
   }
-
+}
+  goToHome = () => {
+    this.props.history.push('/');
+}
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
+      validationError:'',
       [field]: val
     });
   }
   verifyHandler = (e) => {
     const { caseToVerify } = this.state;
-    alert(caseToVerify);
-    alert(e);
+
     const obj = {
       caseId: caseToVerify,
       status: e
@@ -50,11 +61,13 @@ export default class VerifyCase extends Component {
     axios.post("http://localhost:5000/updateCaseStatus", qs.stringify(obj)).then(
       (result) => {
         this.setState({
+          validationError:'',
           message: "Case status changed successfully!"
         });
       }).catch((err) => {
         this.setState({
-          error: "Something went wrong"
+          validationError: err.response.data,
+          caseData:[]
         });
       })
   }
@@ -87,7 +100,7 @@ export default class VerifyCase extends Component {
       dataField: 'casestatus',
       text: 'Status'
     }];
-    const { caseToVerify } = this.state;
+    const { caseToVerify,validationError } = this.state;
     return (
       <>
       <form>
@@ -108,6 +121,7 @@ export default class VerifyCase extends Component {
          </div>
          <h3 class="form-header mt-4">New Case Report</h3>
           <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover  pagination={paginationFactory()} />
+          <span className="text-danger mb-3">{validationError.message}</span>
         </div>
         </form>
       </>

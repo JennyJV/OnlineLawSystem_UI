@@ -12,30 +12,42 @@ export default class FileCase extends Component {
     super(props)
 
     this.state = {
-      caseData: []
+      caseData: [],
+      validationError:''
     }
 
   }
 
   componentDidMount() {
+    if(localStorage.getItem("isLoggedIn")&&(localStorage.getItem("role")=="lawyer")){
     //Replace with current user name 
     const obj = {
-      userId: "Latha@gmail.com"
+      userId: localStorage.getItem("user")
     };
     axios.post("http://localhost:5000/getAcceptedCases", qs.stringify(obj)).then(
       (result) => {
         console.log(result.data.cases)
         this.setState({
-          caseData: result.data.cases
+          caseData: result.data.cases,
+          validationError:''
         });
       }).catch((err) => {
-        console.log("Something went wrong");
+        this.setState({
+          validationError: err.response.data,
+          caseData:[]
+        });
       })
+  }else{
+    this.goToHome();
   }
-
+}
+  goToHome = () => {
+    this.props.history.push('/');
+}
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
+      validationError:'',
       [field]: val
     });
   }
@@ -51,11 +63,13 @@ export default class FileCase extends Component {
     axios.post("http://localhost:5000/updateCaseStatus", qs.stringify(obj)).then(
       (result) => {
         this.setState({
+          validationError:'',
           message: "Case filed successfully!"
         });
       }).catch((err) => {
         this.setState({
-          error: "Something went wrong"
+          validationError: err.response.data,
+          caseData:[]
         });
       })
   }
@@ -88,7 +102,7 @@ export default class FileCase extends Component {
       dataField: 'casestatus',
       text: 'Status'
     }];
-    const { caseToFile } = this.state;
+    const { caseToFile,validationError } = this.state;
     return (
       <>
       <form>
@@ -108,6 +122,7 @@ export default class FileCase extends Component {
          </div>
          <h3 class="form-header mt-4">Accepted Case Report</h3>
           <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover  pagination={paginationFactory()} />
+          <span className="text-danger mb-3">{validationError.message}</span>
         </div>
         </form>
       </>

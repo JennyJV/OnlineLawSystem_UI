@@ -8,34 +8,45 @@ export default class AddCourt extends Component {
     this.state = {
       StateId: '',
       DistrictId: '',
-      CourtId:'',
+      CourtId: '',
       StateData: [],
       DistrictData: [],
-      validationError:''
+      validationError: ''
     }
   }
 
   componentDidMount() {
-    axios.get("http://localhost:5000/states").then(
-      (result) => {
-        this.setState({
-      validationError:'',
-          StateData: result.data.states
-        });
-      }).catch((err) => {
-        this.setState({
-          validationError: err.response.data
-      });
-      })
+    if (localStorage.getItem("isLoggedIn") && (localStorage.getItem("role") == "admin")) {
+      axios.get("http://localhost:5000/states").then(
+        (result) => {
+          this.setState({
+            validationError: '',
+            StateData: result.data.states
+          });
+        }).catch((err) => {
+          this.setState({
+            validationError: err.response.data
+          });
+        })
+    }
+    else {
+      this.goToHome();
+    }
   }
 
   changeDistrict = (e) => {
     const val = e.target.value;
     this.setState({
-      validationError:'',
+      validationError: '',
       StateId: val
     });
-    const obj = {
+    if(val.trim()==""){
+      this.setState({
+        DistrictData: [],
+        DistrictId:'',
+      });
+    }else{
+      const obj = {
       state: val
     };
     axios.post("http://localhost:5000/districts", qs.stringify(obj)).then(
@@ -46,43 +57,51 @@ export default class AddCourt extends Component {
       }).catch((err) => {
         console.log("Something went wrong");
       })
+    }
   }
-
+  goToHome = () => {
+    this.props.history.push('/');
+  }
 
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
-      validationError:'',
-        [field]: val
+      validationError: '',
+      [field]: val
     });
-}
+  }
 
-addCourtHandler = (e) => {
-  e.preventDefault();
-  const { StateId, DistrictId, CourtId } = this.state;
-  const obj = {
-    state:StateId,
-    district:DistrictId, 
-    court:CourtId
-  };
-  console.log(StateId);
-  console.log(DistrictId);
-  console.log(CourtId);
-  axios.post("http://localhost:5000/addCourt", qs.stringify(obj)).then(
+  clearHandler=(e)=>{
+    e.preventDefault();
+    this.setState({
+      StateId: '',
+      DistrictId: '',
+      CourtId: '',
+      validationError: ''
+    })
+  }
+  addCourtHandler = (e) => {
+    e.preventDefault();
+    const { StateId, DistrictId, CourtId } = this.state;
+    const obj = {
+      state: StateId,
+      district: DistrictId,
+      court: CourtId
+    };
+    axios.post("http://localhost:5000/addCourt", qs.stringify(obj)).then(
       (result) => {
         this.setState({
           validationError: ''
-      });
+        });
       }).catch((err) => {
         this.setState({
-          validationError: err.response.data
-      });
+          validationError: err.response.data,
+        });
       })
-
-}
+  }
 
   render() {
-    const {StateId, DistrictId, CourtId,validationError} = this.state;
+    const { StateId, DistrictId, CourtId, validationError } = this.state;
     return (
       <React.Fragment>
         <div className="container mt-5">
@@ -115,11 +134,13 @@ addCourtHandler = (e) => {
 
                 <div class="form-group mx-5 mt-2">
                   <label for="courtInput">Court</label>
-                  <input class="form-control mb-2" id="courtInput" value={CourtId} onChange={(e) => this.handleChange(e, 'CourtId')}/>
+                  <input class="form-control mb-2" id="courtInput" value={CourtId} onChange={(e) => this.handleChange(e, 'CourtId')} />
                   <span className="text-danger mb-4">{validationError.court}</span>
                 </div>
-                <div class="text-center">
+                <div align="center">
                   <button class=" rounded form-btn mt-5 mb-2" onClick={this.addCourtHandler}>Submit</button>
+                  <span>        </span>
+                  <button class=" rounded form-btn mt-5 mb-2" onClick={this.clearHandler}>Clear</button>
                 </div>
                 <span className="text-danger">{validationError.message}</span>
               </form></div>

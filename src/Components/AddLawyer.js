@@ -9,60 +9,79 @@ export default class AddLawyer extends Component {
     this.state = {
       name: '',
       email: '',
-      regno:'',
+      regno: '',
       expertise: '',
-      expertiseData: []
+      expertiseData: [],
+      validationError: ''
     }
   }
 
   componentDidMount() {
-    axios.get("http://localhost:5000/expertise").then(
-      (result) => {
-        this.setState({
-          expertiseData: result.data.expertise
-        });
-      }).catch((err) => {
-        console.log("Something went wrong");
-      })
+    if (localStorage.getItem("isLoggedIn") && (localStorage.getItem("role") == "admin")) {
+      axios.get("http://localhost:5000/expertise").then(
+        (result) => {
+          this.setState({
+            validationError: '',
+            expertiseData: result.data.expertise
+          });
+        }).catch((err) => {
+          this.setState({
+            validationError: err.response.data
+          });
+        })
+    } else {
+      this.goToHome();
+    }
   }
 
+  goToHome = () => {
+    this.props.history.push('/');
+  }
 
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
-        [field]: val
+      validationError: '',
+      [field]: val
     });
-}
+  }
 
+  clearHandler = (e) => {
+    e.preventDefault();
+    this.setState({
+      name: '',
+      email: '',
+      regno: '',
+      expertise: '',
+      validationError: ''
+    })
+  }
 
-addLawyerHandler = () => {
-  const { name, regno, email, expertise } = this.state;
-  const obj = {
-    name:name,
-    regno:regno, 
-    email:email,
-    expertise:expertise
-  };
+  addLawyerHandler = (e) => {
+    e.preventDefault();
 
-  console.log(name);
-  console.log(regno);
-  console.log(email);
-  console.log(expertise);
-  axios.post("http://localhost:5000/addLawyer", qs.stringify(obj)).then(
+    const { name, regno, email, expertise, validationError } = this.state;
+    const obj = {
+      name: name,
+      regno: regno,
+      email: email,
+      expertise: expertise
+    };
+    axios.post("http://localhost:5000/addLawyer", qs.stringify(obj)).then(
       (result) => {
         this.setState({
-        message:"Lawyer added successfully!"
+          validationError: ''
         });
       }).catch((err) => {
-          this.setState({
-              error: "Something went wrong"
-          });
+        this.setState({
+          validationError: err.response.data
+        });
       })
 
-}
+  }
 
   render() {
-    const {name, email, regno, expertise} = this.state;
+    const { name, email, regno, expertise, validationError } = this.state;
     return (
       <>
         <div className="container mt-5">
@@ -73,30 +92,37 @@ addLawyerHandler = () => {
               <form>
                 <div class="form-group mx-5">
                   <label for="nameInput">Name</label>
-                  <input class="form-control mb-3" id="nameInput" onChange={(e) => this.handleChange(e, 'name')} />
+                  <input class="form-control mb-2" id="nameInput" value={name} onChange={(e) => this.handleChange(e, 'name')} />
+                  <span className="text-danger mb-3">{validationError.name}</span>
                 </div>
-                <div class="form-group mx-5">
+                <div class="form-group mx-5 mt-2">
                   <label for="emailInput">Email address</label>
-                  <input type="email" class="form-control mb-3" id="emailInput" placeholder='name@example.com' onChange={(e) => this.handleChange(e, 'email')}/>
+                  <input type="email" class="form-control mb-2" id="emailInput" value={email} placeholder='name@example.com' onChange={(e) => this.handleChange(e, 'email')} />
+                  <span className="text-danger mb-3">{validationError.email}</span>
                 </div>
-                <div class="form-group mx-5">
+                <div class="form-group mx-5 mt-2">
                   <label for="regInput">Registration number</label>
-                  <input class="form-control mb-3" id="regInput" onChange={(e) => this.handleChange(e, 'regno')}/>
+                  <input class="form-control mb-2" id="regInput" value={regno} onChange={(e) => this.handleChange(e, 'regno')} />
+                  <span className="text-danger mb-3">{validationError.regno}</span>
                 </div>
-                <div class="form-group mx-5">
+                <div class="form-group mx-5 mt-2">
                   <label for="expertise">Area of Expertise</label>
-                  <select className="form-control mb-3" name="expertise" id="expertise" value={expertise} onChange={(e) => this.handleChange(e, 'expertise')} >
-                    <option>Select Area of Expertise</option>
+                  <select className="form-control mb-2" name="expertise" id="expertise" value={expertise} onChange={(e) => this.handleChange(e, 'expertise')} >
+                    <option value="">Select Area of Expertise</option>
                     {this.state.expertiseData.map((e, key) => {
                       return <option key={key} value={e.expertise}>{e.expertise}</option>;
                     })}
                   </select>
+                  <span className="text-danger mb-3">{validationError.expertise}</span>
                 </div>
                 <div class="text-center">
-                  <button class=" rounded form-btn mb-5" onClick={this.addLawyerHandler}>Submit</button>
+                  <button class=" rounded form-btn mt-5 mb-2" onClick={this.addLawyerHandler}>Submit</button>
+                  <span>        </span>
+                  <button class=" rounded form-btn mt-5 mb-2" onClick={this.clearHandler}>Clear</button>
                 </div>
+                <span className="text-danger mb-3">{validationError.message}</span>
               </form></div>
-            <div className="col-2  "></div>
+            <div className="col-2 mt-4 "></div>
           </div>
 
         </div>
