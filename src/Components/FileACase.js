@@ -144,7 +144,6 @@ goToHome = () => {
 
   loadLawyer = (e) => {
     const val = e.target.value;
-    alert(val);
     this.setState({
       expertise: val,
       validationError:''
@@ -193,7 +192,6 @@ e.preventDefault();
       caseType: caseType,
       ipc: node.querySelector('#law-autocomplete').value
     };
-    alert(qs.stringify(obj));
     axios.post("http://localhost:5000/fileCase", qs.stringify(obj)).then(
       (result) => {
         this.setState({

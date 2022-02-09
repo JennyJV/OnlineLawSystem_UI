@@ -125,6 +125,9 @@ class Header extends Component {
         axios.post("http://localhost:5000/register", qs.stringify(obj)).then(
             (res) => {
                 localStorage.setItem("isLoggedIn", false);
+                localStorage.setItem("user", "");
+                localStorage.setItem("role", "");
+                localStorage.setItem("fullName","");
                 this.setState({
                     isLoggedIn: false,
                     signUpError: '',
@@ -136,7 +139,7 @@ class Header extends Component {
                     signUpError: err.response.data
                 });
             })
-
+this.logout();
     }
 
     handleChange = (e, field) => {
@@ -223,20 +226,22 @@ class Header extends Component {
                         </div>
 
                         <div className="loginSection col-5 logo">
-                            {
-                                localStorage.getItem("isLoggedIn")
-                                    ?
+                        {(() => {
+                                if (localStorage.getItem("isLoggedIn")) {
+                                    return(
                                     <>
                                         <span className="text-white m-4">Welcome {localStorage.getItem("fullName")} !</span>
                                         <button className="signup-button" onClick={this.logout}>Logout</button>
-                                    </>
-                                    :
+                                    </>)
+                                }else{
+                                    return(
                                     <>
                                         <button className="login-button" onClick={this.openLoginModal}>Sign In</button>
                                         <span className="text-white">|</span>
                                         <button className="signup-button" onClick={this.openSignupModal}>Register</button>
-                                    </>
+                                    </>)
                             }
+                         }) ()}
 
                         </div>
                     </div>

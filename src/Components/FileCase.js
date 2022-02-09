@@ -13,49 +13,46 @@ export default class FileCase extends Component {
 
     this.state = {
       caseData: [],
-      validationError:''
+      validationError: ''
     }
 
   }
 
   componentDidMount() {
-    if(localStorage.getItem("isLoggedIn")&&(localStorage.getItem("role")=="lawyer")){
-    //Replace with current user name 
-    const obj = {
-      userId: localStorage.getItem("user")
-    };
-    axios.post("http://localhost:5000/getAcceptedCases", qs.stringify(obj)).then(
-      (result) => {
-        console.log(result.data.cases)
-        this.setState({
-          caseData: result.data.cases,
-          validationError:''
-        });
-      }).catch((err) => {
-        this.setState({
-          validationError: err.response.data,
-          caseData:[]
-        });
-      })
-  }else{
-    this.goToHome();
+    if (localStorage.getItem("isLoggedIn") && (localStorage.getItem("role") == "lawyer")) {
+      //Replace with current user name 
+      const obj = {
+        userId: localStorage.getItem("user")
+      };
+      axios.post("http://localhost:5000/getAcceptedCases", qs.stringify(obj)).then(
+        (result) => {
+          this.setState({
+            caseData: result.data.cases,
+            validationError: ''
+          });
+        }).catch((err) => {
+          this.setState({
+            validationError: err.response.data,
+            caseData: []
+          });
+        })
+    } else {
+      this.goToHome();
+    }
   }
-}
   goToHome = () => {
     this.props.history.push('/');
-}
+  }
   handleChange = (e, field) => {
     const val = e.target.value;
     this.setState({
-      validationError:'',
+      validationError: '',
       [field]: val
     });
   }
 
   fileHandler = (e) => {
     const { caseToFile } = this.state;
-    alert(caseToFile);
-    alert(e);
     const obj = {
       caseId: caseToFile,
       status: e
@@ -63,13 +60,13 @@ export default class FileCase extends Component {
     axios.post("http://localhost:5000/updateCaseStatus", qs.stringify(obj)).then(
       (result) => {
         this.setState({
-          validationError:'',
+          validationError: '',
           message: "Case filed successfully!"
         });
       }).catch((err) => {
         this.setState({
           validationError: err.response.data,
-          caseData:[]
+          caseData: []
         });
       })
   }
@@ -102,28 +99,28 @@ export default class FileCase extends Component {
       dataField: 'casestatus',
       text: 'Status'
     }];
-    const { caseToFile,validationError } = this.state;
+    const { caseToFile, validationError } = this.state;
     return (
       <>
-      <form>
-        <link rel="stylesheet" href="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table-all.min.css">
-        </link>
-        <div className='container body-container'>
-        <div align="center">
-          <select className="mb-3" name="caseSelect" id="caseSelect" value={caseToFile} onChange={(e) => this.handleChange(e, 'caseToFile')}>
-            <option>Select a Case ID</option>
-            {this.state.caseData.map((e, key) => {
-              return <option key={key} value={e.caseID}>{e.caseID}</option>;
-            })}
-          </select>
-          <div align="center">
-          <button class=" rounded form-btn  mb-5" onClick={(e) => this.fileHandler("Filed")}>File</button>
-         </div>
-         </div>
-         <h3 class="form-header mt-4">Accepted Case Report</h3>
-          <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover  pagination={paginationFactory()} />
-          <span className="text-danger mb-3">{validationError.message}</span>
-        </div>
+        <form>
+          <link rel="stylesheet" href="https://npmcdn.com/react-bootstrap-table/dist/react-bootstrap-table-all.min.css">
+          </link>
+          <div className='container body-container'>
+            <div align="center">
+              <select className="mb-3" name="caseSelect" id="caseSelect" value={caseToFile} onChange={(e) => this.handleChange(e, 'caseToFile')}>
+                <option>Select a Case ID</option>
+                {this.state.caseData.map((e, key) => {
+                  return <option key={key} value={e.caseID}>{e.caseID}</option>;
+                })}
+              </select>
+              <div align="center">
+                <button class=" rounded form-btn  mb-5" onClick={(e) => this.fileHandler("Filed")}>File</button>
+              </div>
+            </div>
+            <h3 class="form-header mt-4">Accepted Case Report</h3>
+            <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover pagination={paginationFactory()} />
+            <span className="text-danger mb-3">{validationError.message}</span>
+          </div>
         </form>
       </>
     );

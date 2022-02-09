@@ -15,7 +15,6 @@ export default class LawAutoComplete extends Component {
       componentDidMount() {
         axios.get("http://localhost:5000/getAllLaw").then(
         (result) => {
-            console.log(result.data.laws)
           this.setState({
             LawData: result.data.laws
           });

@@ -28,7 +28,6 @@ export default class VerifyCase extends Component {
     };
     axios.post("http://localhost:5000/getnewCases", qs.stringify(obj)).then(
       (result) => {
-        console.log(result.data.cases)
         this.setState({
           caseData: result.data.cases,
           validationError:''
