@@ -87,6 +87,10 @@ goToHome = () => {
     const val = e.target.value;
     this.setState({
       StateId: val,
+      DistrictData:[],
+      CourtData:[],
+      DistrictId:'',
+      court:'',
       validationError:''
     });
     if(val.trim()==""){
@@ -117,6 +121,8 @@ goToHome = () => {
     const val = e.target.value;
     this.setState({
       DistrictId: val,
+      CourtData:[],
+      court:'',
       validationError:''
     });
     if(val.trim()==""){
@@ -146,6 +152,8 @@ goToHome = () => {
     const val = e.target.value;
     this.setState({
       expertise: val,
+      LawyerData: [],
+      lawyer:'',
       validationError:''
     });
     if(val.trim()==""){

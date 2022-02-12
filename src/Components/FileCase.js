@@ -117,7 +117,7 @@ export default class FileCase extends Component {
                 <button class=" rounded form-btn  mb-5" onClick={(e) => this.fileHandler("Filed")}>File</button>
               </div>
             </div>
-            <h3 class="form-header mt-4">Accepted Case Report</h3>
+            <h3 class="form-header mt-4">Cases to be Filed</h3>
             <BootstrapTable keyField='caseID' data={this.state.caseData} columns={caseColumns} striped hover pagination={paginationFactory()} />
             <span className="text-danger mb-3">{validationError.message}</span>
           </div>

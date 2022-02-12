@@ -34,16 +34,20 @@ export default class AddCourt extends Component {
     }
   }
 
-  changeDistrict = (e) => {
+  loadDistrict = (e) => {
     const val = e.target.value;
     this.setState({
       validationError: '',
+      DistrictData:[],
+      DistrictId:'',
+      CourtId:'',
       StateId: val
     });
     if(val.trim()==""){
       this.setState({
         DistrictData: [],
         DistrictId:'',
+        CourtId:''
       });
     }else{
       const obj = {
@@ -61,6 +65,21 @@ export default class AddCourt extends Component {
   }
   goToHome = () => {
     this.props.history.push('/');
+  }
+
+  districtHandler = (e) => {
+    const val = e.target.value;
+    this.setState({
+      validationError: '',
+      DistrictId:val,
+      CourtId:'',
+    });
+    if(val.trim()==""){
+      this.setState({
+        CourtId:''
+      });
+    }
+    
   }
 
   handleChange = (e, field) => {
@@ -112,7 +131,7 @@ export default class AddCourt extends Component {
               <form>
                 <div class="form-group mx-5 mt-2">
                   <label for="stateInput">State</label>
-                  <select className="form-control mb-2" name="state" id="stateInput" value={StateId} onChange={(e) => this.changeDistrict(e)} >
+                  <select className="form-control mb-2" name="state" id="stateInput" value={StateId} onChange={(e) => this.loadDistrict(e)} >
                     <option value="">Select State</option>
                     {this.state.StateData.map((e, key) => {
                       return <option key={key} value={e.state}>{e.state}</option>;
@@ -123,7 +142,7 @@ export default class AddCourt extends Component {
 
                 <div class="form-group mx-5 mt-2">
                   <label for="districtInput">District</label>
-                  <select className="form-control mb-2" name="district" id="districtInput" value={DistrictId} onChange={(e) => this.handleChange(e, 'DistrictId')}>
+                  <select className="form-control mb-2" name="district" id="districtInput" value={DistrictId} onChange={(e) => this.districtHandler(e)}>
                     <option value="">Select District</option>
                     {this.state.DistrictData.map((e, key) => {
                       return <option key={key} value={e.district}>{e.district}</option>;
